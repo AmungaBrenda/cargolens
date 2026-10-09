@@ -1,5 +1,7 @@
 # CargoLens
 
+**Live demo:** https://cargolens-sii0.onrender.com/map/ (free hosting, so the first load can take up to a minute)
+
 A live vessel-tracking and alerting backend. It streams real AIS ship positions, stores them in MySQL, flags suspicious behaviour, and shows everything on an interactive map.
 
 ![CargoLens map](docs/map.png)
