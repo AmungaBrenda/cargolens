@@ -46,6 +46,7 @@ def nearest_port(lat, lon):
 def run_checks():
     created = 0
     with Session(engine) as session:
+        session.query(Alert).delete()  # NEW: clear old alerts so they always reflect now
         latest = (
             session.query(Position.vessel_id, func.max(Position.id).label("pid"))
             .group_by(Position.vessel_id)

@@ -5,10 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CargoLens</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <style>html, body, #map { height: 100%; margin: 0; }</style>
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    #status {
+      position: absolute; top: 10px; right: 10px; z-index: 1000;
+      background: white; padding: 6px 10px; border-radius: 6px;
+      font: 13px sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+  </style>
 </head>
 <body>
   <div id="map"></div>
+  <div id="status">Loading…</div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const map = L.map("map").setView([50.5, 1.0], 7);
@@ -16,24 +24,43 @@
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
 
-    fetch("/vessels")
-      .then(r => r.json())
-      .then(vessels => {
-                vessels.forEach(v => {
-          const flagged = v.alert !== null;
-          L.circleMarker([v.lat, v.lon], {
-            radius: flagged ? 9 : 5,
-            color: flagged ? "#c0392b" : "#2471a3",
-            fillColor: flagged ? "#e74c3c" : "#3498db",
-            fillOpacity: 0.8
-          })
-            .addTo(map)
-            .bindPopup(
-              `<b>${v.name}</b><br>MMSI ${v.mmsi}<br>${v.speed ?? "?"} knots` +
-              (flagged ? `<br><b style="color:#c0392b">⚠ ${v.alert}</b>` : "")
-            );
-        });
-      });
+    const markers = {};
+
+    function render(v) {
+      const flagged = v.alert !== null;
+      const style = {
+        radius: flagged ? 9 : 5,
+        color: flagged ? "#c0392b" : "#2471a3",
+        fillColor: flagged ? "#e74c3c" : "#3498db",
+        fillOpacity: 0.8
+      };
+      const popup =
+        `<b>${v.name}</b><br>MMSI ${v.mmsi}<br>${v.speed ?? "?"} knots` +
+        (flagged ? `<br><b style="color:#c0392b">⚠ ${v.alert}</b>` : "");
+      if (markers[v.mmsi]) {
+        markers[v.mmsi].setLatLng([v.lat, v.lon]).setStyle(style).setPopupContent(popup);
+      } else {
+        markers[v.mmsi] = L.circleMarker([v.lat, v.lon], style).addTo(map).bindPopup(popup);
+      }
+    }
+
+    function refresh() {
+      fetch("/vessels")
+        .then(r => r.json())
+        .then(vessels => {
+          const seen = new Set(vessels.map(v => v.mmsi));
+          Object.keys(markers).forEach(id => {
+            if (!seen.has(id)) { map.removeLayer(markers[id]); delete markers[id]; }
+          });
+          vessels.forEach(render);
+          document.getElementById("status").textContent =
+            vessels.length + " ships · updated " + new Date().toLocaleTimeString();
+        })
+        .catch(() => {});
+    }
+
+    refresh();
+    setInterval(refresh, 30000);
   </script>
 </body>
 </html>

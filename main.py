@@ -1,6 +1,20 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="CargoLens")
+import asyncio
+import os
+from contextlib import asynccontextmanager
+
+from live import run_forever
+
+@asynccontextmanager
+async def lifespan(app):
+    task = asyncio.create_task(run_forever()) if os.getenv("LIVE_INGEST") == "1" else None
+    yield
+    if task:
+        task.cancel()
+
+
+app = FastAPI(title="CargoLens", lifespan=lifespan)
 
 @app.get("/")
 def home():
