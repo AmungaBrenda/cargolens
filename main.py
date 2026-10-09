@@ -39,13 +39,28 @@ def list_vessels():
             .join(Position, Position.id == latest.c.pid)
             .all()
         )
+        alert_by_vessel = {a.vessel_id: a.message for a in session.query(Alert).all()}
         return [
-            {"mmsi": v.mmsi, "name": v.name, "lat": p.latitude,
-             "lon": p.longitude, "speed": p.speed_knots}
+            {"mmsi": v.mmsi, "name": v.name, "lat": p.latitude, "lon": p.longitude,
+             "speed": p.speed_knots, "alert": alert_by_vessel.get(v.id)}
             for v, p in rows
         ]
+        
 
 
 from fastapi.staticfiles import StaticFiles
 
-app.mount("/map", StaticFiles(directory="static", html=True), name="map")    
+app.mount("/map", StaticFiles(directory="static", html=True), name="map")   
+
+
+from models import Alert
+
+
+@app.get("/alerts")
+def list_alerts():
+    with Session(engine) as session:
+        alerts = session.query(Alert).order_by(Alert.id.desc()).limit(50).all()
+        return [
+            {"type": a.alert_type, "message": a.message, "created_at": str(a.created_at)}
+            for a in alerts
+        ]

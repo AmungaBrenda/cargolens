@@ -19,10 +19,19 @@
     fetch("/vessels")
       .then(r => r.json())
       .then(vessels => {
-        vessels.forEach(v => {
-          L.circleMarker([v.lat, v.lon], { radius: 6 })
+                vessels.forEach(v => {
+          const flagged = v.alert !== null;
+          L.circleMarker([v.lat, v.lon], {
+            radius: flagged ? 9 : 5,
+            color: flagged ? "#c0392b" : "#2471a3",
+            fillColor: flagged ? "#e74c3c" : "#3498db",
+            fillOpacity: 0.8
+          })
             .addTo(map)
-            .bindPopup(`<b>${v.name}</b><br>MMSI ${v.mmsi}<br>${v.speed ?? "?"} knots`);
+            .bindPopup(
+              `<b>${v.name}</b><br>MMSI ${v.mmsi}<br>${v.speed ?? "?"} knots` +
+              (flagged ? `<br><b style="color:#c0392b">⚠ ${v.alert}</b>` : "")
+            );
         });
       });
   </script>
