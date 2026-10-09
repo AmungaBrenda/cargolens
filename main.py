@@ -16,3 +16,6 @@ def db_check():
         result = conn.execute(text("SELECT 1"))
         return {"database": "Database is connected!"}
     
+
+from models import Base
+Base.metadata.create_all(engine)
