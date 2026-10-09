@@ -2,7 +2,7 @@
 
 A live vessel-tracking and alerting backend. It streams real AIS ship positions, stores them in MySQL, flags suspicious behaviour, and shows everything on an interactive map.
 
-![CargoLens map](docs/map.png)
+![CargoLens map](cargolens/docs/map.png)
 
 ## What it does
 
