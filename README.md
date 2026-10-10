@@ -1,6 +1,6 @@
 # CargoLens
 
-**Live demo:** https://cargolens-sii0.onrender.com/map/ (free hosting, so the first load can take up to a minute)
+**Live demo:** https://cargolens-sii0.onrender.com/map/ (free hosting: the first load can take up to a minute, and ships update while the page is open)
 
 A live vessel-tracking and alerting backend. It streams real AIS ship positions, stores them in MySQL, flags suspicious behaviour, and shows everything on an interactive map.
 
@@ -8,7 +8,8 @@ A live vessel-tracking and alerting backend. It streams real AIS ship positions,
 
 ## What it does
 
-- Ingests live ship positions from the AISStream.io WebSocket feed
+- Continuously ingests live ship positions from the AISStream.io WebSocket feed, in a background task inside the API
+- Refreshes the map every 30 seconds, moving ships in place
 - Stores vessels, positions and alerts in MySQL via SQLAlchemy
 - Flags ships that are stopped offshore (far from any known port) or moving unusually fast
 - Serves a REST API (FastAPI) with auto-generated docs at `/docs`
@@ -37,8 +38,9 @@ Python 3.13, FastAPI, SQLAlchemy, MySQL, WebSockets, Leaflet.js
 | `GET /docs` | Interactive API documentation |
 
 ## Known limitations and next steps
+## Known limitations and next steps
 
-- The port list is hand-picked; a production version would load a full open port and anchorage dataset
-- Ingestion is a one-shot script; next step is a continuous background worker with auto-refreshing map
-- "Silent ship" detection (a vessel stops transmitting) needs continuous ingestion
+- The port list is hand-picked (23 ports), so ships docked at unlisted harbours can trigger false "stopped offshore" alerts; next step is loading a full open port and anchorage dataset
+- On free hosting the server sleeps when idle, so ingestion only runs while someone is viewing the map; a paid worker would run it 24/7
+- "Silent ship" detection (a vessel stops transmitting) is possible now that ingestion is continuous
 - Planned: ETA delay prediction and Docker deployment

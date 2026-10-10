@@ -37,6 +37,7 @@ def save(meta, report):
             latitude=meta["latitude"],
             longitude=meta["longitude"],
             speed_knots=report.get("Sog"),
+            nav_status=report.get("NavigationalStatus"),
         ))
         session.commit()
 

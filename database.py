@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 
 load_dotenv()
 
@@ -14,3 +14,10 @@ engine = create_engine(
     connect_args=connect_args,
     pool_pre_ping=True,
 )
+
+def ensure_columns():
+      """Add columns introduced after the first deploy (create_all never alters tables)."""
+      cols = {c["name"] for c in inspect(engine).get_columns("positions")}
+      if "nav_status" not in cols:
+          with engine.begin() as conn:
+              conn.execute(text("ALTER TABLE positions ADD COLUMN nav_status INT NULL"))

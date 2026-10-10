@@ -34,6 +34,9 @@ def db_check():
 from models import Base
 Base.metadata.create_all(engine)
 
+from database import ensure_columns
+ensure_columns()
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from models import Vessel, Position

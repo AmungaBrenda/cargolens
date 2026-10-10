@@ -23,6 +23,7 @@ class Position(Base):
     latitude: Mapped[float]
     longitude: Mapped[float]
     speed_knots: Mapped[float | None]
+    nav_status: Mapped[int | None]
     recorded_at: Mapped[str] = mapped_column(DateTime, server_default=func.now())
     vessel = relationship("Vessel", back_populates="positions")
 
