@@ -56,10 +56,18 @@ def list_vessels():
             .join(Position, Position.id == latest.c.pid)
             .all()
         )
-        alert_by_vessel = {a.vessel_id: a.message for a in session.query(Alert).all()}
+        alerts = {a.vessel_id: a for a in session.query(Alert).all()}
         return [
-            {"mmsi": v.mmsi, "name": v.name, "lat": p.latitude, "lon": p.longitude,
-             "speed": p.speed_knots, "alert": alert_by_vessel.get(v.id)}
+            {
+                "mmsi": v.mmsi,
+                "name": v.name,
+                "lat": p.latitude,
+                "lon": p.longitude,
+                "speed": p.speed_knots,
+                "nav_status": p.nav_status,
+                "alert": alerts[v.id].message if v.id in alerts else None,
+                "alert_type": alerts[v.id].alert_type if v.id in alerts else None,
+            }
             for v, p in rows
         ]
         
